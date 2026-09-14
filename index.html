@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오늘 뭐 듣지? | 오늘의 노래 추천</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: #4a3b32;
+        }
+
+        p.subtitle {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .category-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            background: #f0f0f0;
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover, .btn.active {
+            background: #764ba2;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .music-card {
+            background: #ffffff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-top: 10px;
+            transition: opacity 0.5s ease;
+        }
+
+        .album-art {
+            width: 150px;
+            height: 150px;
+            background-color: #ddd;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .song-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #222;
+        }
+
+        .artist {
+            font-size: 1rem;
+            color: #777;
+            margin-bottom: 15px;
+        }
+
+        .comment {
+            font-size: 0.85rem;
+            color: #888;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .random-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #ff758c, #ff7eb3);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .random-btn:hover {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎧 오늘의 노래 추천</h1>
+    <p class="subtitle">지금 당신의 기분에 딱 맞는 노래를 골라드릴게요!</p>
+
+    <!-- 카테고리 버튼 -->
+    <div class="category-buttons">
+        <button class="btn active" onclick="filterMusic('all', this)">🎲 전체</button>
+        <button class="btn" onclick="filterMusic('energetic', this)">🔥 신나는</button>
+        <button class="btn" onclick="filterMusic('calm', this)">☕ 잔잔한</button>
+        <button class="btn" onclick="filterMusic('rainy', this)">🌧️ 감성적인</button>
+    </div>
+
+    <!-- 노래 카드 -->
+    <div class="music-card">
+        <div class="album-art" id="albumArt">🎵</div>
+        <div class="song-title" id="songTitle">곡 제목</div>
+        <div class="artist" id="artist">아티스트</div>
+        <div class="comment" id="comment">추천 한마디가 여기에 들어갑니다.</div>
+        
+        <button class="random-btn" onclick="getRandomMusic()">다른 노래 추천받기 🔀</button>
+    </div>
+</div>
+
+<script>
+    // 추천 노래 데이터베이스 (원하는 곡으로 자유롭게 추가/수정 가능)
+    const playlist = [
+        { title: " 사건의 지평선", artist: "윤하", category: "energetic", emoji: "🌌", comment: "벅차오르는 감정을 느끼고 싶을 때 들으면 최고!" },
+        { title: "Hype Boy", artist: "NewJeans", category: "energetic", emoji: "🎧", comment: "언제 들어도 기분이 좋아지는 트렌디한 리듬." },
+        { title: "Dynamite", artist: "BTS", category: "energetic", emoji: "🕺", comment: "신나게 활력을 더하고 싶은 날에 강추!" },
+        { title: "비가 오고 그래서", artist: "헤이즈", category: "rainy", emoji: "☔", comment: "창밖에 비가 내릴 때 멍하니 듣기 좋은 곡." },
+        { title: "우산", artist: "에픽하이 (feat. 윤하)", category: "rainy", emoji: "🌧️", comment: "감성에 젖어들고 싶을 때 생각나는 명곡." },
+        { title: "모든 날, 모든 순간", artist: "폴킴", category: "calm", emoji: "🕯️", comment: "마음이 편안해지고 위로받고 싶을 때." },
+        { title: "Night Dancer", artist: "imase", category: "energetic", emoji: "💃", comment: "나도 모르게 리듬을 타게 되는 중독성!" },
+        { title: "Off My Face", artist: "Justin Bieber", category: "calm", emoji: "🎸", comment: "어쿠스틱 기타 소리와 감성적인 목소리의 조화." }
+    ];
+
+    let currentCategory = 'all';
+
+    // 카테고리 필터링
+    function filterMusic(category, element) {
+        currentCategory = category;
+        
+        // 버튼 활성화 스타일 변경
+        document.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+        element.classList.add('active');
+
+        getRandomMusic();
+    }
+
+    // 노래 무작위 추천 함수
+    function getRandomMusic() {
+        let filteredList = playlist;
+        
+        if (currentCategory !== 'all') {
+            filteredList = playlist.filter(song => song.category === currentCategory);
+        }
+
+        const randomIndex = Math.floor(Math.random() * filteredList.length);
+        const selectedSong = filteredList[randomIndex];
+
+        // 화면 업데이트
+        document.getElementById('albumArt').innerText = selectedSong.emoji;
+        document.getElementById('songTitle').innerText = selectedSong.title;
+        document.getElementById('artist').innerText = selectedSong.artist;
+        document.getElementById('comment').innerText = `"${selectedSong.comment}"`;
+    }
+
+    // 페이지 시작 시 첫 번째 노래 추천
+    window.onload = getRandomMusic;
+</script>
+
+</body>
+</html>
